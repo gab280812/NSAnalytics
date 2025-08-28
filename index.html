@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Nature's Seed WooCommerce Analytics Dashboard - Real-time sales data, revenue tracking, and business insights">
+    <meta name="theme-color" content="#69874B">
+    <title>Nature's Seed Analytics Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"></noscript>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1><i class="fas fa-chart-line"></i> Nature's Seed Analytics</h1>
+            </div>
+        </header>
+
+
+        <!-- Date Range Controls -->
+        <div class="date-controls">
+            <div class="date-controls-header">
+                <button class="toggle-controls-btn" id="toggleControls">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Date Range & Comparison</span>
+                    <i class="fas fa-chevron-down toggle-icon"></i>
+                </button>
+            </div>
+            <div class="date-controls-content" id="dateControlsContent">
+                <div class="date-range-group">
+                    <h3>Date Range</h3>
+                    <div class="period-buttons">
+                        <button class="btn-secondary period-btn" data-period="today">Today</button>
+                        <button class="btn-secondary period-btn" data-period="yesterday">Yesterday</button>
+                        <button class="btn-secondary period-btn active" data-period="mtd">MTD</button>
+                        <button class="btn-secondary period-btn" data-period="ytd">YTD</button>
+                        <button class="btn-secondary period-btn" data-period="last-month">Last Month</button>
+                        <button class="btn-secondary period-btn" data-period="last-30">Last 30 Days</button>
+                        <button class="btn-secondary period-btn" data-period="last-7">Last 7 Days</button>
+                    </div>
+                </div>
+
+                <div class="comparison-group">
+                    <div class="comparison-header">
+                        <h3>Comparison</h3>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="enableComparison">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="comparison-options" id="comparisonOptions">
+                        <div class="comparison-type-buttons">
+                            <button class="btn-secondary comparison-type-btn active" data-comparison="last-period">Last Period</button>
+                            <button class="btn-secondary comparison-type-btn" data-comparison="last-year">Last Year</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-aggregation-group">
+                    <h3>Chart View</h3>
+                    <div class="aggregation-buttons">
+                        <button class="btn-secondary aggregation-btn active" data-aggregation="daily">Daily</button>
+                        <button class="btn-secondary aggregation-btn" data-aggregation="weekly">Weekly</button>
+                        <button class="btn-secondary aggregation-btn" data-aggregation="monthly">Monthly</button>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Loading State -->
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Loading analytics data...</p>
+            </div>
+
+            <!-- Error State -->
+            <div class="error-state" id="errorState" style="display: none;">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h3>Unable to load data</h3>
+                <p id="errorMessage">Please check your API configuration and try again.</p>
+                <button class="btn-primary" id="retryBtn">Retry</button>
+            </div>
+
+            <!-- Dashboard -->
+            <div class="dashboard" id="dashboard" style="display: none;">
+                <!-- Key Metrics -->
+                <section class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-icon">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                        <div class="metric-content">
+                            <h3>Total Revenue</h3>
+                            <p class="metric-value" id="totalRevenue">$0</p>
+                            <div class="metric-comparison">
+                                <span class="metric-change" id="revenueChange">+0%</span>
+                                <span class="comparison-period" id="revenueComparison" style="display: none;">vs previous period</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-icon">
+                            <i class="fas fa-shopping-cart"></i>
+                        </div>
+                        <div class="metric-content">
+                            <h3>Total Orders</h3>
+                            <p class="metric-value" id="totalOrders">0</p>
+                            <div class="metric-comparison">
+                                <span class="metric-change" id="ordersChange">+0%</span>
+                                <span class="comparison-period" id="ordersComparison" style="display: none;">vs previous period</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="metric-content">
+                            <h3>Total Customers</h3>
+                            <p class="metric-value" id="totalCustomers">0</p>
+                            <div class="metric-comparison">
+                                <span class="metric-change" id="customersChange">+0%</span>
+                                <span class="comparison-period" id="customersComparison" style="display: none;">vs previous period</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-icon">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                        <div class="metric-content">
+                            <h3>Average Order Value</h3>
+                            <p class="metric-value" id="avgOrderValue">$0</p>
+                            <div class="metric-comparison">
+                                <span class="metric-change" id="aovChange">+0%</span>
+                                <span class="comparison-period" id="aovComparison" style="display: none;">vs previous period</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Charts Section -->
+                <section class="charts-section">
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <h3>Revenue Over Time</h3>
+                            <div class="chart-controls">
+                                <span class="current-period" id="currentPeriodLabel">Last 30 days</span>
+                            </div>
+                        </div>
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <h3>Top Products</h3>
+                        </div>
+                        <canvas id="productsChart"></canvas>
+                    </div>
+                </section>
+
+                <!-- Recent Orders -->
+                <section class="recent-orders">
+                    <div class="section-header">
+                        <h3>Recent Orders</h3>
+                        <button class="btn-secondary" id="refreshBtn">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                    </div>
+                    <div class="orders-table">
+                        <table id="ordersTable">
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Customer</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ordersTableBody">
+                                <!-- Orders will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="woocommerce-api.js" defer></script>
+    <script src="charts.js" defer></script>
+    <script src="app.js" defer></script>
+</body>
+</html>
