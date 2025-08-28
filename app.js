@@ -7,6 +7,7 @@ class DashboardApp {
         this.comparisonType = 'last-period';
         this.chartAggregation = 'daily';
         this.isDateControlsVisible = true;
+        this.isWelcomeMode = true;
         
         this.initializeApp();
     }
@@ -25,12 +26,50 @@ class DashboardApp {
     }
 
     bindEvents() {
-        // Toggle date controls
-        document.getElementById('toggleControls').addEventListener('click', () => {
-            this.toggleDateControls();
+        // Welcome page timeframe buttons
+        document.querySelectorAll('.timeframe-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                // Remove active class from all buttons
+                document.querySelectorAll('.timeframe-btn').forEach(b => b.classList.remove('active'));
+                // Add active class to clicked button
+                e.currentTarget.classList.add('active');
+                this.currentPeriod = e.currentTarget.dataset.period;
+                
+                // Show/hide custom date range
+                const customDateRange = document.getElementById('customDateRange');
+                if (this.currentPeriod === 'custom') {
+                    customDateRange.style.display = 'block';
+                } else {
+                    customDateRange.style.display = 'none';
+                }
+            });
         });
 
-        // Period buttons
+        // Generate report button
+        const generateBtn = document.getElementById('generateReport');
+        if (generateBtn) {
+            generateBtn.addEventListener('click', () => {
+                this.generateReport();
+            });
+        }
+
+        // New report button (in dashboard)
+        const newReportBtn = document.getElementById('newReportBtn');
+        if (newReportBtn) {
+            newReportBtn.addEventListener('click', () => {
+                this.showWelcomePage();
+            });
+        }
+
+        // Back to welcome button (in error state)
+        const backToWelcomeBtn = document.getElementById('backToWelcome');
+        if (backToWelcomeBtn) {
+            backToWelcomeBtn.addEventListener('click', () => {
+                this.showWelcomePage();
+            });
+        }
+
+        // Period buttons (legacy - for dashboard mode)
         document.querySelectorAll('.period-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 // Remove active class from all buttons
@@ -78,23 +117,26 @@ class DashboardApp {
 
 
         // Refresh button
-        document.getElementById('refreshBtn').addEventListener('click', () => {
-            this.loadDashboardData();
-        });
+        const refreshBtn = document.getElementById('refreshBtn');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', () => {
+                this.loadDashboardData();
+            });
+        }
 
         // Retry button
-        document.getElementById('retryBtn').addEventListener('click', () => {
-            this.loadDashboardData();
-        });
+        const retryBtn = document.getElementById('retryBtn');
+        if (retryBtn) {
+            retryBtn.addEventListener('click', () => {
+                this.loadDashboardData();
+            });
+        }
 
     }
 
     loadConfiguration() {
-        // Initialize date controls as expanded
-        this.initializeDateControls();
-        
-        // API is pre-configured, load data immediately
-        this.loadDashboardData();
+        // Show welcome page initially
+        this.showWelcomePage();
     }
 
 
@@ -212,16 +254,17 @@ class DashboardApp {
     }
 
     updateMetrics(metrics) {
-        document.getElementById('totalRevenue').textContent = wooAPI.formatCurrency(metrics.totalRevenue);
-        document.getElementById('totalOrders').textContent = metrics.totalOrders.toLocaleString();
-        document.getElementById('totalCustomers').textContent = metrics.totalCustomers.toLocaleString();
-        document.getElementById('avgOrderValue').textContent = wooAPI.formatCurrency(metrics.avgOrderValue);
+        document.getElementById('totalRevenue').textContent = this.wooAPI.formatCurrency(metrics.totalRevenue || 0);
+        document.getElementById('totalOrders').textContent = (metrics.totalOrders || 0).toLocaleString();
+        document.getElementById('totalCustomers').textContent = (metrics.totalCustomers || 0).toLocaleString();
+        document.getElementById('avgOrderValue').textContent = this.wooAPI.formatCurrency(metrics.avgOrderValue || 0);
 
-        // Update changes with real comparison data
-        this.updateMetricChange('revenueChange', metrics.changes.revenueChange);
-        this.updateMetricChange('ordersChange', metrics.changes.ordersChange);
-        this.updateMetricChange('customersChange', metrics.changes.customersChange);
-        this.updateMetricChange('aovChange', metrics.changes.aovChange);
+        // Update changes with real comparison data (with fallback for missing changes)
+        const changes = metrics.changes || {};
+        this.updateMetricChange('revenueChange', changes.revenueChange || 0);
+        this.updateMetricChange('ordersChange', changes.ordersChange || 0);
+        this.updateMetricChange('customersChange', changes.customersChange || 0);
+        this.updateMetricChange('aovChange', changes.aovChange || 0);
     }
 
     updateMetricChange(elementId, change) {
@@ -233,7 +276,7 @@ class DashboardApp {
     }
 
     updateCharts(revenueData, topProducts, comparisonRevenueData = null) {
-        chartManager.updateCharts(revenueData, topProducts, comparisonRevenueData);
+        this.chartManager.updateCharts(revenueData, topProducts, comparisonRevenueData);
     }
 
     updateOrdersTable(orders) {
@@ -245,9 +288,9 @@ class DashboardApp {
             row.innerHTML = `
                 <td>#${order.number}</td>
                 <td>${this.getCustomerName(order)}</td>
-                <td>${wooAPI.formatDate(order.date_created)}</td>
+                <td>${this.wooAPI.formatDate(order.date_created)}</td>
                 <td><span class="status-badge status-${order.status}">${this.formatStatus(order.status)}</span></td>
-                <td>${wooAPI.formatCurrency(order.total)}</td>
+                <td>${this.wooAPI.formatCurrency(order.total)}</td>
             `;
             tbody.appendChild(row);
         });
@@ -264,18 +307,21 @@ class DashboardApp {
         return status.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase());
     }
 
-    showLoading(message = 'Loading analytics data...') {
+    showLoading(message = 'Generating your analytics report...') {
         this.isLoading = true;
         document.getElementById('loading').style.display = 'flex';
         document.getElementById('loading').querySelector('p').textContent = message;
         document.getElementById('dashboard').style.display = 'none';
         document.getElementById('errorState').style.display = 'none';
+        document.getElementById('welcomePage').style.display = 'none';
     }
 
     showDashboard() {
         this.isLoading = false;
+        this.isWelcomeMode = false;
         document.getElementById('loading').style.display = 'none';
         document.getElementById('errorState').style.display = 'none';
+        document.getElementById('welcomePage').style.display = 'none';
         document.getElementById('dashboard').style.display = 'block';
     }
 
@@ -283,6 +329,7 @@ class DashboardApp {
         this.isLoading = false;
         document.getElementById('loading').style.display = 'none';
         document.getElementById('dashboard').style.display = 'none';
+        document.getElementById('welcomePage').style.display = 'none';
         document.getElementById('errorState').style.display = 'flex';
         document.getElementById('errorMessage').textContent = message;
     }
@@ -320,17 +367,36 @@ class DashboardApp {
         
         if (this.enableComparison) {
             // Set default comparison dates (previous period)
-            const comparisonRange = wooAPI.getComparisonDateRange(this.currentStartDate, this.currentEndDate);
-            document.getElementById('comparisonStartDate').value = wooAPI.formatDateForInput(comparisonRange.startDate);
-            document.getElementById('comparisonEndDate').value = wooAPI.formatDateForInput(comparisonRange.endDate);
+            const comparisonRange = this.wooAPI.getComparisonDateRange(this.currentStartDate, this.currentEndDate);
+            document.getElementById('comparisonStartDate').value = this.wooAPI.formatDateForInput(comparisonRange.startDate);
+            document.getElementById('comparisonEndDate').value = this.wooAPI.formatDateForInput(comparisonRange.endDate);
             
             this.loadDashboardData();
         }
     }
 
     updatePeriodLabel() {
-        const label = wooAPI.formatDateRange(this.currentStartDate, this.currentEndDate);
-        document.getElementById('currentPeriodLabel').textContent = label;
+        let label;
+        if (this.currentPeriod === 'custom' && this.currentStartDate && this.currentEndDate) {
+            label = this.wooAPI.formatDateRange(this.currentStartDate, this.currentEndDate);
+        } else {
+            // Use period-based labels
+            const periodLabels = {
+                'today': 'Today',
+                'yesterday': 'Yesterday',
+                'last-7': 'Last 7 Days',
+                'mtd': 'Month to Date',
+                'last-month': 'Last Month',
+                'last-30': 'Last 30 Days',
+                'ytd': 'Year to Date'
+            };
+            label = periodLabels[this.currentPeriod] || 'Selected Period';
+        }
+        
+        const labelElement = document.getElementById('currentPeriodLabel');
+        if (labelElement) {
+            labelElement.textContent = label;
+        }
     }
 
     initializeDateControls() {
@@ -352,9 +418,89 @@ class DashboardApp {
         content.classList.toggle('expanded');
         toggleIcon.classList.toggle('rotated');
     }
+
+    showWelcomePage() {
+        this.isWelcomeMode = true;
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('dashboard').style.display = 'none';
+        document.getElementById('errorState').style.display = 'none';
+        document.getElementById('welcomePage').style.display = 'block';
+    }
+
+    generateReport() {
+        // Validate custom date range if selected
+        if (this.currentPeriod === 'custom') {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            
+            if (!startDate || !endDate) {
+                alert('Please select both start and end dates for custom range.');
+                return;
+            }
+            
+            if (new Date(startDate) > new Date(endDate)) {
+                alert('Start date must be before end date.');
+                return;
+            }
+        }
+
+        // Get report options
+        this.comparisonEnabled = document.getElementById('includeComparison').checked;
+        const includeCharts = document.getElementById('includeCharts').checked;
+        const includeProducts = document.getElementById('includeProducts').checked;
+        const includeOrders = document.getElementById('includeOrders').checked;
+
+        // Store options for dashboard rendering
+        this.reportOptions = {
+            includeCharts,
+            includeProducts,
+            includeOrders
+        };
+
+        // Load dashboard data
+        this.loadDashboardData();
+    }
+
+    updateDashboard(data) {
+        // Update metrics
+        this.updateMetrics(data.currentMetrics);
+        
+        // Update comparison visibility
+        const comparisonElements = document.querySelectorAll('.comparison-period');
+        comparisonElements.forEach(el => {
+            el.style.display = this.comparisonEnabled ? 'inline' : 'none';
+        });
+        
+        // Update charts if enabled
+        if (!this.reportOptions || this.reportOptions.includeCharts !== false) {
+            this.updateCharts(data.current, data.topProducts, data.comparison);
+        }
+        
+        // Update orders table if enabled
+        if (this.reportOptions && this.reportOptions.includeOrders) {
+            this.updateOrdersTable(data.recentOrders || []);
+        } else {
+            // Hide orders section if not requested
+            const ordersSection = document.querySelector('.recent-orders');
+            if (ordersSection) {
+                ordersSection.style.display = this.reportOptions?.includeOrders ? 'block' : 'none';
+            }
+        }
+        
+        // Update period label
+        this.updatePeriodLabel();
+        
+        this.showDashboard();
+    }
+
+    hideLoading() {
+        // This method is called by the existing code, so we need to keep it
+        // but redirect to showDashboard for consistency
+        this.showDashboard();
+    }
 }
 
 // Initialize app when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    window.app = new AnalyticsApp();
+    window.app = new DashboardApp();
 });

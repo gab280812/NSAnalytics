@@ -10,7 +10,7 @@ class ChartManager {
         };
     }
 
-    createRevenueChart(data, comparisonData = null) {
+    updateRevenueChart(data, comparisonData = null) {
         const ctx = document.getElementById('revenueChart').getContext('2d');
         
         // Destroy existing chart if it exists
@@ -18,8 +18,13 @@ class ChartManager {
             this.charts.revenue.destroy();
         }
 
-        const labels = data.map(item => this.formatDate(item.date));
-        const revenues = data.map(item => item.revenue);
+        // Handle empty or undefined data
+        if (!data || !Array.isArray(data) || data.length === 0) {
+            data = [];
+        }
+
+        const labels = data.map(item => this.formatDate(item.date || item.date_created));
+        const revenues = data.map(item => parseFloat(item.revenue || item.total || 0));
         
         const datasets = [{
             label: 'Current Period',
@@ -136,9 +141,14 @@ class ChartManager {
             this.charts.products.destroy();
         }
 
-        const labels = data.map(item => this.truncateText(item.name, 20));
-        const revenues = data.map(item => item.revenue);
-        const quantities = data.map(item => item.quantity);
+        // Handle empty or undefined data
+        if (!data || !Array.isArray(data) || data.length === 0) {
+            data = [];
+        }
+
+        const labels = data.map(item => this.truncateText(item.name || 'Unknown Product', 20));
+        const revenues = data.map(item => parseFloat(item.revenue || 0));
+        const quantities = data.map(item => parseInt(item.quantity || 0));
 
         this.charts.products = new Chart(ctx, {
             type: 'doughnut',
@@ -227,7 +237,7 @@ class ChartManager {
     }
 
     updateCharts(revenueData, productsData, comparisonRevenueData = null) {
-        this.createRevenueChart(revenueData, comparisonRevenueData);
+        this.updateRevenueChart(revenueData, comparisonRevenueData);
         this.createProductsChart(productsData);
     }
 

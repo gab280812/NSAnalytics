@@ -25,63 +25,128 @@
         </header>
 
 
-        <!-- Date Range Controls -->
-        <div class="date-controls">
-            <div class="date-controls-header">
-                <button class="toggle-controls-btn" id="toggleControls">
-                    <i class="fas fa-calendar-alt"></i>
-                    <span>Date Range & Comparison</span>
-                    <i class="fas fa-chevron-down toggle-icon"></i>
-                </button>
-            </div>
-            <div class="date-controls-content" id="dateControlsContent">
-                <div class="date-range-group">
-                    <h3>Date Range</h3>
-                    <div class="period-buttons">
-                        <button class="btn-secondary period-btn" data-period="today">Today</button>
-                        <button class="btn-secondary period-btn" data-period="yesterday">Yesterday</button>
-                        <button class="btn-secondary period-btn active" data-period="mtd">MTD</button>
-                        <button class="btn-secondary period-btn" data-period="ytd">YTD</button>
-                        <button class="btn-secondary period-btn" data-period="last-month">Last Month</button>
-                        <button class="btn-secondary period-btn" data-period="last-30">Last 30 Days</button>
-                        <button class="btn-secondary period-btn" data-period="last-7">Last 7 Days</button>
+        <!-- Welcome Page -->
+        <main class="main-content">
+            <!-- Welcome Section -->
+            <div class="welcome-page" id="welcomePage">
+                <div class="welcome-container">
+                    <div class="welcome-header">
+                        <i class="fas fa-seedling welcome-icon"></i>
+                        <h2>Welcome to Nature's Seed Analytics</h2>
+                        <p>Generate comprehensive reports for your business insights</p>
                     </div>
-                </div>
 
-                <div class="comparison-group">
-                    <div class="comparison-header">
-                        <h3>Comparison</h3>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="enableComparison">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                    <div class="comparison-options" id="comparisonOptions">
-                        <div class="comparison-type-buttons">
-                            <button class="btn-secondary comparison-type-btn active" data-comparison="last-period">Last Period</button>
-                            <button class="btn-secondary comparison-type-btn" data-comparison="last-year">Last Year</button>
+                    <div class="timeframe-selection">
+                        <h3>Select Report Time Frame</h3>
+                        <div class="timeframe-grid">
+                            <button class="timeframe-btn" data-period="today">
+                                <i class="fas fa-clock"></i>
+                                <span class="timeframe-title">Today</span>
+                                <span class="timeframe-desc">Current day performance</span>
+                            </button>
+                            
+                            <button class="timeframe-btn" data-period="yesterday">
+                                <i class="fas fa-calendar-day"></i>
+                                <span class="timeframe-title">Yesterday</span>
+                                <span class="timeframe-desc">Previous day analysis</span>
+                            </button>
+                            
+                            <button class="timeframe-btn" data-period="last-7">
+                                <i class="fas fa-calendar-week"></i>
+                                <span class="timeframe-title">Last 7 Days</span>
+                                <span class="timeframe-desc">Weekly performance</span>
+                            </button>
+                            
+                            <button class="timeframe-btn active" data-period="mtd">
+                                <i class="fas fa-calendar-alt"></i>
+                                <span class="timeframe-title">Month to Date</span>
+                                <span class="timeframe-desc">Current month progress</span>
+                            </button>
+                            
+                            <button class="timeframe-btn" data-period="last-month">
+                                <i class="fas fa-calendar"></i>
+                                <span class="timeframe-title">Last Month</span>
+                                <span class="timeframe-desc">Previous month complete</span>
+                            </button>
+                            
+                            <button class="timeframe-btn" data-period="last-30">
+                                <i class="fas fa-calendar-times"></i>
+                                <span class="timeframe-title">Last 30 Days</span>
+                                <span class="timeframe-desc">Rolling 30-day period</span>
+                            </button>
+                            
+                            <button class="timeframe-btn" data-period="ytd">
+                                <i class="fas fa-chart-line"></i>
+                                <span class="timeframe-title">Year to Date</span>
+                                <span class="timeframe-desc">Current year progress</span>
+                            </button>
+                            
+                            <button class="timeframe-btn" data-period="custom">
+                                <i class="fas fa-cog"></i>
+                                <span class="timeframe-title">Custom Range</span>
+                                <span class="timeframe-desc">Choose specific dates</span>
+                            </button>
+                        </div>
+
+                        <!-- Custom Date Range (initially hidden) -->
+                        <div class="custom-date-range" id="customDateRange" style="display: none;">
+                            <div class="date-inputs">
+                                <div class="date-input-group">
+                                    <label for="startDate">Start Date</label>
+                                    <input type="date" id="startDate" name="startDate">
+                                </div>
+                                <div class="date-input-group">
+                                    <label for="endDate">End Date</label>
+                                    <input type="date" id="endDate" name="endDate">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Report Options -->
+                        <div class="report-options">
+                            <h4>Report Options</h4>
+                            <div class="options-grid">
+                                <label class="option-checkbox">
+                                    <input type="checkbox" id="includeComparison" checked>
+                                    <span class="checkmark"></span>
+                                    Include comparison with previous period
+                                </label>
+                                
+                                <label class="option-checkbox">
+                                    <input type="checkbox" id="includeCharts" checked>
+                                    <span class="checkmark"></span>
+                                    Generate visual charts
+                                </label>
+                                
+                                <label class="option-checkbox">
+                                    <input type="checkbox" id="includeProducts" checked>
+                                    <span class="checkmark"></span>
+                                    Include top products analysis
+                                </label>
+                                
+                                <label class="option-checkbox">
+                                    <input type="checkbox" id="includeOrders">
+                                    <span class="checkmark"></span>
+                                    Show recent orders table
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="submit-section">
+                            <button class="btn-primary submit-btn" id="generateReport">
+                                <i class="fas fa-chart-bar"></i>
+                                Generate Analytics Report
+                            </button>
                         </div>
                     </div>
                 </div>
-
-                <div class="chart-aggregation-group">
-                    <h3>Chart View</h3>
-                    <div class="aggregation-buttons">
-                        <button class="btn-secondary aggregation-btn active" data-aggregation="daily">Daily</button>
-                        <button class="btn-secondary aggregation-btn" data-aggregation="weekly">Weekly</button>
-                        <button class="btn-secondary aggregation-btn" data-aggregation="monthly">Monthly</button>
-                    </div>
-                </div>
-                
             </div>
-        </div>
 
-        <!-- Main Content -->
-        <main class="main-content">
             <!-- Loading State -->
-            <div class="loading" id="loading">
+            <div class="loading" id="loading" style="display: none;">
                 <div class="spinner"></div>
-                <p>Loading analytics data...</p>
+                <p>Generating your analytics report...</p>
             </div>
 
             <!-- Error State -->
@@ -90,6 +155,7 @@
                 <h3>Unable to load data</h3>
                 <p id="errorMessage">Please check your API configuration and try again.</p>
                 <button class="btn-primary" id="retryBtn">Retry</button>
+                <button class="btn-secondary" id="backToWelcome">Back to Welcome</button>
             </div>
 
             <!-- Dashboard -->
@@ -157,6 +223,9 @@
                             <h3>Revenue Over Time</h3>
                             <div class="chart-controls">
                                 <span class="current-period" id="currentPeriodLabel">Last 30 days</span>
+                                <button class="btn-secondary" id="newReportBtn">
+                                    <i class="fas fa-plus"></i> New Report
+                                </button>
                             </div>
                         </div>
                         <canvas id="revenueChart"></canvas>
